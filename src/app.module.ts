@@ -6,9 +6,30 @@ import { TilesModule } from './tiles/tiles.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { ContestsModule } from './contests/contests.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ContestEntity } from './contests/entities/contest.entity';
+
+require('dotenv').config();
 
 @Module({
-  imports: [WorksModule, TilesModule, PostsModule, CommentsModule, ContestsModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'root',
+      password: process.env.DATABASE_PASSWORD,
+      database: 'palice',
+      entities: [ContestEntity],
+      synchronize: true,
+      autoLoadEntities: true,
+    }),
+    WorksModule,
+    TilesModule,
+    PostsModule,
+    CommentsModule,
+    ContestsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

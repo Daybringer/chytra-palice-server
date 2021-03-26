@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.setGlobalPrefix('api');
   // Swagger OpenAPI Documentation config
   const config = new DocumentBuilder()
     .setTitle('Chytrá palice')
@@ -13,7 +13,7 @@ async function bootstrap() {
     .addTag('contest')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/doc', app, document);
 
   await app.listen(3000);
 }
