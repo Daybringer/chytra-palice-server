@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  app.enableCors();
+  app.use(helmet());
   // Swagger OpenAPI Documentation config
   const config = new DocumentBuilder()
     .setTitle('Chytrá palice')
@@ -13,7 +15,7 @@ async function bootstrap() {
     .addTag('contest')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/doc', app, document);
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(3000);
 }
