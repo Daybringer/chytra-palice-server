@@ -26,10 +26,6 @@ export class ContestsService {
     newContest.category = createContestDto.category;
     newContest.dateEnding = createContestDto.dateEnding;
     newContest.dateAdded = Date.now();
-    newContest.nominated = [];
-    newContest.first = [];
-    newContest.second = [];
-    newContest.third = [];
     return this.contestRepository.save(newContest);
   }
 

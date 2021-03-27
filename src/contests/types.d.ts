@@ -1,2 +1,2 @@
-type Category = 'cestina' | 'dejepis' | 'hst' | 'jine';
+type Category = 'palice' | 'palicka' | 'jine';
 export { Category };

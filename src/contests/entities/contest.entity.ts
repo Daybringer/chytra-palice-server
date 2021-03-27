@@ -9,7 +9,7 @@ export class ContestEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column('bigint')
   dateEnding: number;
 
   @Column('bigint')
@@ -24,18 +24,18 @@ export class ContestEntity {
   @Column()
   category: Category;
 
-  @Column({ type: 'text' })
+  @Column({ default: '', type: 'text' })
   description: string;
 
-  @Column('int', { array: true })
+  @Column('int', { default: '{}', array: true })
   nominated: number[];
 
-  @Column('int', { array: true })
+  @Column('int', { default: '{}', array: true })
   first: number[];
 
-  @Column('int', { array: true })
+  @Column('int', { default: '{}', array: true })
   second: number[];
 
-  @Column('int', { array: true })
+  @Column('int', { default: '{}', array: true })
   third: number[];
 }
