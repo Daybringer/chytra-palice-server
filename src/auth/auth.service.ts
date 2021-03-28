@@ -21,8 +21,10 @@ export class AuthService {
     const { email, name, hd, sub } = payload;
     if (hd !== 'gjk.cz') throw new UnauthorizedException('Unauthorized domain');
 
-    const isAdmin = Boolean(this.adminRepository.findOne({ where: { email } }));
-    const userPayload = { email, name, isAdmin, sub };
+    const isAdmin = await this.adminRepository.findOne({ where: { email } });
+
+    console.log(isAdmin, !!isAdmin);
+    const userPayload = { email, name, isAdmin: !!isAdmin, sub };
     return await this.jwtService.signAsync(userPayload);
   }
 

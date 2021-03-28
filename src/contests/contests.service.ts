@@ -19,22 +19,22 @@ export class ContestsService {
    * @param createContestDto
    * @returns Contest
    */
-  create(createContestDto: CreateContestDto) {
+  async create(createContestDto: CreateContestDto): Promise<Contest> {
     const newContest = new ContestEntity();
     newContest.name = createContestDto.name;
     newContest.description = createContestDto.description;
     newContest.category = createContestDto.category;
     newContest.dateEnding = createContestDto.dateEnding;
     newContest.dateAdded = Date.now();
-    return this.contestRepository.save(newContest);
+    return await this.contestRepository.save(newContest);
   }
 
   findAll() {
     return `This action returns all contests`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contest`;
+  async findOne(id: number): Promise<Contest> {
+    return await this.contestRepository.findOne({ where: { id } });
   }
 
   update(id: number, updateContestDto: UpdateContestDto) {

@@ -6,7 +6,7 @@ export class ContestEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column('text')
   name: string;
 
   @Column('bigint')
@@ -21,7 +21,7 @@ export class ContestEntity {
   @Column({ default: false })
   deleted: boolean;
 
-  @Column()
+  @Column('text')
   category: Category;
 
   @Column({ default: '', type: 'text' })

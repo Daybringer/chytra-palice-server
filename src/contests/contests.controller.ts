@@ -6,7 +6,11 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { ContestsService } from './contests.service';
 import { CreateContestDto } from './dto/create-contest.dto';
 import { UpdateContestDto } from './dto/update-contest.dto';
@@ -15,8 +19,10 @@ import { UpdateContestDto } from './dto/update-contest.dto';
 export class ContestsController {
   constructor(private readonly contestsService: ContestsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createContestDto: CreateContestDto) {
+  create(@Body() createContestDto: CreateContestDto, @Req() req) {
+    if (!req.user.isAdmin) throw new UnauthorizedException();
     return this.contestsService.create(createContestDto);
   }
 
@@ -26,7 +32,7 @@ export class ContestsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.contestsService.findOne(+id);
   }
 
