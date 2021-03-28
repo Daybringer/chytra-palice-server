@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { ApprovedState, Subject } from '../types';
 
 @Entity()
-export class Work {
+export class WorkEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

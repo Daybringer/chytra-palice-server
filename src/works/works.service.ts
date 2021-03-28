@@ -1,13 +1,40 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+// DTOs
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
+// Entities & interfaces
+import { WorkEntity } from './entities/work.entity';
 
 @Injectable()
 export class WorksService {
-  create(createWorkDto: CreateWorkDto) {
-    return 'This action adds a new work';
+  constructor(
+    @InjectRepository(WorkEntity)
+    private readonly workRepository: Repository<WorkEntity>,
+  ) {}
+
+  /**
+   *
+   * @param createWorkDto
+   * @returns
+   */
+  async create(createWorkDto: CreateWorkDto, file) {
+    const newWork = new WorkEntity();
+    newWork.contestID = createWorkDto.contestID;
+    newWork.name = createWorkDto.name;
+    newWork.authorName = createWorkDto.authorName;
+    newWork.authorEmail = createWorkDto.authorEmail;
+    newWork.keywords = createWorkDto.keywords;
+    newWork.isMaturitaProject = createWorkDto.isMaturitaProject;
+    newWork.subject = createWorkDto.subject;
+    return await this.workRepository.save(newWork);
   }
 
+  /**
+   *
+   * @returns
+   */
   findAll() {
     return `This action returns all works`;
   }

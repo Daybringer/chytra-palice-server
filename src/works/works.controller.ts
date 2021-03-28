@@ -1,15 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('works')
 export class WorksController {
   constructor(private readonly worksService: WorksService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createWorkDto: CreateWorkDto) {
-    return this.worksService.create(createWorkDto);
+  @UseInterceptors(
+    FileInterceptor('document', {
+      dest: 'files',
+      fileFilter: (req, file, cb) => {
+        console.log(req);
+        if (!file.originalname.match(/\.(pdf)$/))
+          cb(new Error('Not supported format'), false);
+
+        file.filename = 'test';
+        cb(null, true);
+      },
+    }),
+  )
+  create(@Body() createWorkDto: CreateWorkDto, @UploadedFile() file) {
+    return this.worksService.create(createWorkDto, file);
   }
 
   @Get()

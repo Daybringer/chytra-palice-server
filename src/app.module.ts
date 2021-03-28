@@ -7,9 +7,8 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { ContestsModule } from './contests/contests.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ContestEntity } from './contests/entities/contest.entity';
 import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { MulterModule } from '@nestjs/platform-express';
 
 require('dotenv').config();
 
@@ -22,9 +21,11 @@ require('dotenv').config();
       username: 'root',
       password: process.env.DATABASE_PASSWORD,
       database: 'palice',
-      entities: [ContestEntity],
       synchronize: true,
       autoLoadEntities: true,
+    }),
+    MulterModule.register({
+      dest: './files',
     }),
     WorksModule,
     TilesModule,
@@ -32,7 +33,6 @@ require('dotenv').config();
     CommentsModule,
     ContestsModule,
     AuthModule,
-    JwtAuthGuard,
   ],
   controllers: [AppController],
   providers: [AppService],
