@@ -8,6 +8,8 @@ import { CommentsModule } from './comments/comments.module';
 import { ContestsModule } from './contests/contests.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ContestEntity } from './contests/entities/contest.entity';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 require('dotenv').config();
 
@@ -29,6 +31,8 @@ require('dotenv').config();
     PostsModule,
     CommentsModule,
     ContestsModule,
+    AuthModule,
+    JwtAuthGuard,
   ],
   controllers: [AppController],
   providers: [AppService],

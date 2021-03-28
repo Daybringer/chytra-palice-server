@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 @Controller()
 export class AppController {
@@ -10,8 +11,10 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get()
-  securedInfo(): string {
+  @UseGuards(JwtAuthGuard)
+  @Get('secure')
+  getSecureInfo(@Req() req): string {
+    console.log(req.headers);
     return 'secureInfo';
   }
 }
