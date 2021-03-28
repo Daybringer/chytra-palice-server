@@ -9,7 +9,7 @@ require('dotenv').config();
 @Module({
   imports: [
     JwtModule.register({
-      secret: 'test2',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '100d' },
     }),
     TypeOrmModule.forFeature([AdminEntity]),

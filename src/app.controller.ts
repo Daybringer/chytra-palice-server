@@ -14,7 +14,7 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Get('secure')
   getSecureInfo(@Req() req): string {
-    console.log(req.headers);
+    console.log('req payload', req.user);
     return 'secureInfo';
   }
 }
