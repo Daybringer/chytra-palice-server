@@ -1,4 +1,4 @@
-import { ApprovedState, Subject } from '../types';
+import { ApprovedState, Class, Subject } from '../types';
 
 export interface Work {
   id: number;
@@ -8,6 +8,8 @@ export interface Work {
   authorName: string;
   authorEmail: string;
   contestID: number;
+  timesRead: number;
+  class: Class;
   subject: Subject;
   isMaturitaProject: boolean;
   keywords: string[];

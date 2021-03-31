@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
@@ -22,22 +23,26 @@ export class WorksController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
+  create(@Body() createWorkDto: CreateWorkDto, @Req() req) {
+    return this.worksService.create(createWorkDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('document', {
       dest: 'files',
       fileFilter: (req, file, cb) => {
         console.log(req);
-        if (!file.originalname.match(/\.(pdf)$/))
+        if (!file.originalname.match(/\.(pdf|odt|doc|docx)$/))
           cb(new Error('Not supported format'), false);
 
-        file.filename = 'test';
+        file.filename = String(Date.now());
         cb(null, true);
       },
     }),
   )
-  create(@Body() createWorkDto: CreateWorkDto, @UploadedFile() file) {
-    return this.worksService.create(createWorkDto, file);
-  }
+  @Post('upload/:id')
+  uploadDocument(@Req() req, @UploadedFile() file) {}
 
   @Get()
   findAll() {

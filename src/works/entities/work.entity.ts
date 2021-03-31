@@ -1,13 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { ApprovedState, Subject } from '../types';
+import { ApprovedState, Class, FileType, Subject } from '../types';
 
 @Entity()
 export class WorkEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ default: false })
-  deleted: boolean;
 
   @Column()
   name: string;
@@ -27,8 +24,17 @@ export class WorkEntity {
   @Column()
   subject: Subject;
 
+  @Column('text')
+  class: Class;
+
+  @Column('int', { default: 0 })
+  timesRead: number;
+
   @Column()
   isMaturitaProject: boolean;
+
+  @Column('text')
+  fileType: FileType;
 
   @Column('text', { default: '{}', array: true })
   keywords: string[];
@@ -41,4 +47,7 @@ export class WorkEntity {
 
   @Column('text', { default: '' })
   guarantorMessage: string;
+
+  @Column({ default: false })
+  deleted: boolean;
 }

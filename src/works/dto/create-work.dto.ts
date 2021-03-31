@@ -1,8 +1,8 @@
-import { Subject } from '../types';
+import { Subject, FileType } from '../types';
 
 export class CreateWorkDto {
   readonly name: string;
-  readonly file: string;
+  readonly fileType: FileType;
   readonly authorName: string;
   readonly authorEmail: string;
   readonly contestID: number;

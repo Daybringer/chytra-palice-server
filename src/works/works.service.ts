@@ -19,7 +19,7 @@ export class WorksService {
    * @param createWorkDto
    * @returns
    */
-  async create(createWorkDto: CreateWorkDto, file) {
+  async create(createWorkDto: CreateWorkDto) {
     const newWork = new WorkEntity();
     newWork.contestID = createWorkDto.contestID;
     newWork.name = createWorkDto.name;
@@ -28,7 +28,29 @@ export class WorksService {
     newWork.keywords = createWorkDto.keywords;
     newWork.isMaturitaProject = createWorkDto.isMaturitaProject;
     newWork.subject = createWorkDto.subject;
+    newWork.dateAdded = Date.now();
     return await this.workRepository.save(newWork);
+  }
+
+  inferUserFromJWT(
+    createWorkDto: CreateWorkDto,
+    jwt: { email: string; name: string; isAdmin: boolean; sub: number },
+  ): CreateWorkDto {
+    return;
+  }
+
+  /**
+   *
+   * @param file
+   * @param id
+   */
+  async uploadDocument(file: any, id: number) {}
+
+  /**
+   * Checks wether the work with given ID already has assigned document.
+   */
+  async hasDocument(id: number): Promise<boolean> {
+    return;
   }
 
   /**
