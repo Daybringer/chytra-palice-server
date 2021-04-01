@@ -10,12 +10,16 @@ import {
   UseInterceptors,
   UploadedFile,
   Req,
+  Res,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+import { identity } from 'rxjs';
 
 @Controller('works')
 export class WorksController {
@@ -24,25 +28,46 @@ export class WorksController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createWorkDto: CreateWorkDto, @Req() req) {
+    // assign user info if user isn't an admin
+    if (!req.user.isAdmin) {
+      return this.worksService.create(
+        this.worksService.inferUserInfoFromJWT(createWorkDto, req.user),
+      );
+    }
+
     return this.worksService.create(createWorkDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
-    FileInterceptor('document', {
-      dest: 'files',
-      fileFilter: (req, file, cb) => {
-        console.log(req);
-        if (!file.originalname.match(/\.(pdf|odt|doc|docx)$/))
-          cb(new Error('Not supported format'), false);
-
-        file.filename = String(Date.now());
-        cb(null, true);
-      },
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './files/documents',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${path.extname(file.originalname)}`);
+        },
+      }),
     }),
   )
   @Post('upload/:id')
-  uploadDocument(@Req() req, @UploadedFile() file) {}
+  uploadDocument(
+    @Req() req,
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+  ) {
+    return this.worksService.uploadDocument(file, +id);
+  }
+
+  @Get('file/:id/:filetype')
+  sendFile(@Res() res, @Param('id') id, @Param('filetype') filetype) {
+    return res.sendFile(`${id}.${filetype}`, {
+      root: `./files/documents/${id}`,
+    });
+  }
 
   @Get()
   findAll() {

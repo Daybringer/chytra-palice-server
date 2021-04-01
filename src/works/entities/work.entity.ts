@@ -30,7 +30,7 @@ export class WorkEntity {
   @Column('int', { default: 0 })
   timesRead: number;
 
-  @Column()
+  @Column('boolean', { default: false })
   isMaturitaProject: boolean;
 
   @Column('text')
