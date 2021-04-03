@@ -53,7 +53,7 @@ export class WorksService {
   }
 
   /**
-   * creates dir with given ID and moves files there
+   * creates dir with given `id` and moves files there
    */
   async uploadDocument(file: Express.Multer.File, id: number) {
     if (this.hasDocument(id)) throw new Error('Files already exist');
@@ -90,7 +90,7 @@ export class WorksService {
   }
 
   /**
-   * Checks wether the work with given ID already has assigned document.
+   * Checks wether the work with given `id` already has assigned document.
    */
   hasDocument(id: number): boolean {
     return fs.existsSync(`files/documents/${id}`);
@@ -105,7 +105,7 @@ export class WorksService {
   }
 
   /**
-   * finds single work by ID and returns it
+   * finds single work by `id` and returns it
    */
   async findOneByID(id: number): Promise<Work> {
     const work = await this.workRepository.findOne({ where: { id } });
@@ -119,11 +119,35 @@ export class WorksService {
     });
   }
 
-  update(id: number, updateWorkDto: UpdateWorkDto) {
-    return `This action updates a #${id} work`;
+  /**
+   * Sets approveState to `rejected` and sets guarantor message
+   */
+  async rejectWork(
+    id: number,
+    guarantorEmail: string,
+    guarantorMessage: string,
+  ) {
+    return await this.workRepository.update(
+      { id: id },
+      { approvedState: 'rejected', guarantorMessage, guarantorEmail },
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} work`;
+  /**
+   * Sets approveState to `approved`
+   */
+  async approveWork(id: number) {
+    return await this.workRepository.update(
+      { id: id },
+      { approvedState: 'approved' },
+    );
   }
+
+  // update(id: number, updateWorkDto: UpdateWorkDto) {
+  //   return `This action updates a #${id} work`;
+  // }
+
+  // remove(id: number) {
+  //   return `This action removes a #${id} work`;
+  // }
 }

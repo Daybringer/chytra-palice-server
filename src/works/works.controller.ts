@@ -13,6 +13,7 @@ import {
   Res,
   HttpCode,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
@@ -81,13 +82,33 @@ export class WorksController {
     return this.worksService.findOneByID(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWorkDto: UpdateWorkDto) {
-    return this.worksService.update(+id, updateWorkDto);
+  @UseGuards(JwtAuthGuard)
+  @Post('approve/:id')
+  approveWork(@Param('id') id: string, @Req() req) {
+    if (req.user.isAdmin) return this.worksService.approveWork(+id);
+    else throw new UnauthorizedException('No admin priviliges');
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.worksService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  @Post('reject/:id')
+  rejectWork(@Param('id') id: string, @Req() req, @Body() body) {
+    console.log(body);
+    if (req.user.isAdmin)
+      return this.worksService.rejectWork(
+        +id,
+        req.user.email,
+        body.guarantorMessage,
+      );
+    else throw new UnauthorizedException('No admin priviliges');
   }
+
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateWorkDto: UpdateWorkDto) {
+  //   return this.worksService.update(+id, updateWorkDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.worksService.remove(+id);
+  // }
 }
