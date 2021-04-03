@@ -11,6 +11,7 @@ import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
 // Entities & interfaces
 import { WorkEntity } from './entities/work.entity';
+import { Work } from './entities/work.interface';
 
 @Injectable()
 export class WorksService {
@@ -52,12 +53,12 @@ export class WorksService {
   }
 
   /**
-   *
+   * creates dir with given ID and moves files there
    */
   async uploadDocument(file: Express.Multer.File, id: number) {
-    console.log(file, id);
-    const temp = file.originalname.split('.');
-    const fileExtension = temp[temp.length - 1];
+    if (this.hasDocument(id)) throw new Error('Files already exist');
+
+    const fileExtension = path.extname(file.originalname);
 
     // creating empty folder
     fs.mkdirSync(path.join(`files/documents/${id}`));
@@ -73,10 +74,9 @@ export class WorksService {
   }
 
   /**
-   *
+   * converting files with libreoffice
    */
   convertFile(filePath: string, workID: number, fileType: 'pdf' | 'epub') {
-    console.log(filePath);
     const file = fs.readFileSync(filePath);
 
     libre.convert(file, fileType, undefined, (err, done) => {
@@ -85,25 +85,37 @@ export class WorksService {
       }
 
       fs.writeFileSync(`files/documents/${workID}/${workID}.${fileType}`, done);
+      return;
     });
   }
 
   /**
    * Checks wether the work with given ID already has assigned document.
    */
-  async hasDocument(id: number): Promise<boolean> {
-    return;
+  hasDocument(id: number): boolean {
+    return fs.existsSync(`files/documents/${id}`);
   }
 
   /**
    * returns all works with given parameters that are not disabled
    */
-  findAll() {
-    return `This action returns all works`;
+  async findAll(filterParams = {}): Promise<Work[]> {
+    return await this.workRepository.find({ where: filterParams });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} work`;
+  /**
+   * finds single work by ID and returns it
+   */
+  async findOneByID(id: number): Promise<Work> {
+    const work = await this.workRepository.findOne({ where: { id } });
+
+    return this.filterDeleted([work])[0];
+  }
+
+  filterDeleted(works: Work[]): Work[] {
+    return works.filter((work) => {
+      return !work.deleted;
+    });
   }
 
   update(id: number, updateWorkDto: UpdateWorkDto) {

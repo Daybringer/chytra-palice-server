@@ -33,7 +33,7 @@ export class ContestsController {
 
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.contestsService.findOne(+id);
+    return this.contestsService.findOneByID(+id);
   }
 
   @Patch(':id')

@@ -33,7 +33,7 @@ export class ContestsService {
     return `This action returns all contests`;
   }
 
-  async findOne(id: number): Promise<Contest> {
+  async findOneByID(id: number): Promise<Contest> {
     return await this.contestRepository.findOne({ where: { id } });
   }
 

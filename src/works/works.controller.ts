@@ -11,6 +11,7 @@ import {
   UploadedFile,
   Req,
   Res,
+  HttpCode,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
@@ -19,7 +20,6 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
-import { identity } from 'rxjs';
 
 @Controller('works')
 export class WorksController {
@@ -62,7 +62,7 @@ export class WorksController {
     return this.worksService.uploadDocument(file, +id);
   }
 
-  @Get('file/:id/:filetype')
+  @Get(':id/:filetype')
   sendFile(@Res() res, @Param('id') id, @Param('filetype') filetype) {
     return res.sendFile(`${id}.${filetype}`, {
       root: `./files/documents/${id}`,
@@ -76,7 +76,7 @@ export class WorksController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.worksService.findOne(+id);
+    return this.worksService.findOneByID(+id);
   }
 
   @Patch(':id')
