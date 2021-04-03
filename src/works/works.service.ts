@@ -99,8 +99,9 @@ export class WorksService {
   /**
    * returns all works with given parameters that are not disabled
    */
-  async findAll(filterParams = {}): Promise<Work[]> {
-    return await this.workRepository.find({ where: filterParams });
+  async findAll(filterOptions = {}): Promise<Work[]> {
+    console.log('hit: ', filterOptions);
+    return await this.workRepository.find({ where: filterOptions });
   }
 
   /**

@@ -1,1 +1,4 @@
-export class CreateCommentDto {}
+export class CreateCommentDto {
+  readonly workID: number;
+  readonly message: string;
+}

@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+// DTOs
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+// Entities & interfaces
+import { CommentEntity } from './entities/comment.entity';
+import { Comment } from './entities/comment.interface';
 
 @Injectable()
 export class CommentsService {
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+  constructor(
+    @InjectRepository(CommentEntity)
+    private commentRepository: Repository<CommentEntity>,
+  ) {}
+  create(
+    createCommentDto: CreateCommentDto,
+    authorName: string,
+  ): Promise<Comment> {
+    const newComment = new CommentEntity();
+    newComment.dateAdded = Date.now();
+    newComment.authorName = authorName;
+    newComment.workID = createCommentDto.workID;
+    newComment.message = createCommentDto.message;
+    return this.commentRepository.save(newComment);
   }
 
-  findAll() {
-    return `This action returns all comments`;
+  findAllByPostID(workID: number) {
+    return this.commentRepository.find({
+      where: { workID },
+      order: { dateAdded: 'ASC' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
-  }
-
-  update(id: number, updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
+  removeByID(id: number) {
+    return this.commentRepository.delete({ id });
   }
 }

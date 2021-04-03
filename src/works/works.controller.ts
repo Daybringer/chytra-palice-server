@@ -12,6 +12,7 @@ import {
   Req,
   Res,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
@@ -70,8 +71,9 @@ export class WorksController {
   }
 
   @Get()
-  findAll() {
-    return this.worksService.findAll();
+  findAll(@Query() filterOptions) {
+    console.log(filterOptions);
+    return this.worksService.findAll(filterOptions);
   }
 
   @Get(':id')
