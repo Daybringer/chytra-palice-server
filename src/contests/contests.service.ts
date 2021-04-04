@@ -29,8 +29,8 @@ export class ContestsService {
     return await this.contestRepository.save(newContest);
   }
 
-  findAll() {
-    return `This action returns all contests`;
+  async findAll() {
+    return await this.contestRepository.find({ deleted: false });
   }
 
   async findOneByID(id: number): Promise<Contest> {

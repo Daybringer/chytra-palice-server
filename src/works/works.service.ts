@@ -14,6 +14,7 @@ import { WorkEntity } from './entities/work.entity';
 import { Work } from './entities/work.interface';
 import { KeywordEntity } from './entities/keyword.entity';
 import { Keyword } from './entities/keyword.interface';
+import { ContestEntity } from 'src/contests/entities/contest.entity';
 
 @Injectable()
 export class WorksService {
@@ -22,6 +23,8 @@ export class WorksService {
     private readonly workRepository: Repository<WorkEntity>,
     @InjectRepository(KeywordEntity)
     private readonly keywordRepository: Repository<KeywordEntity>,
+    @InjectRepository(ContestEntity)
+    private readonly contestRepository: Repository<ContestEntity>,
   ) {}
 
   /**
@@ -140,17 +143,26 @@ export class WorksService {
   }
 
   /**
-   * Sets approveState to `approved`
+   * Sets approveState to `approved` and adds work to to the nominated list of a contest
    */
   async approveWork(id: number) {
     this.workRepository
       .update({ id: id }, { approvedState: 'approved' })
       .then(async (updateResult) => {
+        // Updating keywords
         const keywords = (await this.workRepository.findOne({ where: { id } }))
           .keywords;
         keywords.forEach((keyword) => {
           this.addKeyword(this.formatKeyword(keyword));
         });
+        // Add workID to a contest nominated array
+        const contestID = (await this.workRepository.findOne({ id })).contestID;
+        const nominated = (
+          await this.contestRepository.findOne({ id: contestID })
+        ).nominated;
+        nominated.push(id);
+
+        this.contestRepository.update({ id: contestID }, { nominated });
         return updateResult;
       });
   }
