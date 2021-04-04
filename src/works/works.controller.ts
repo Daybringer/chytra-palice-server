@@ -27,6 +27,32 @@ import * as path from 'path';
 export class WorksController {
   constructor(private readonly worksService: WorksService) {}
 
+  @Get(':id/:filetype')
+  sendFile(
+    @Res() res,
+    @Param('id') id: string,
+    @Param('filetype') filetype: string,
+  ) {
+    return res.sendFile(`${id}.${filetype}`, {
+      root: `./files/documents/${id}`,
+    });
+  }
+
+  @Get()
+  findAll(@Query() filterOptions) {
+    return this.worksService.findAll(filterOptions);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.worksService.findOneByID(+id);
+  }
+
+  @Get('keywords/get/all')
+  getKeywords() {
+    return this.worksService.getAllKeywords();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createWorkDto: CreateWorkDto, @Req() req) {
@@ -64,24 +90,6 @@ export class WorksController {
     return this.worksService.uploadDocument(file, +id);
   }
 
-  @Get(':id/:filetype')
-  sendFile(@Res() res, @Param('id') id, @Param('filetype') filetype) {
-    return res.sendFile(`${id}.${filetype}`, {
-      root: `./files/documents/${id}`,
-    });
-  }
-
-  @Get()
-  findAll(@Query() filterOptions) {
-    console.log(filterOptions);
-    return this.worksService.findAll(filterOptions);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.worksService.findOneByID(+id);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Post('approve/:id')
   approveWork(@Param('id') id: string, @Req() req) {
@@ -92,7 +100,6 @@ export class WorksController {
   @UseGuards(JwtAuthGuard)
   @Post('reject/:id')
   rejectWork(@Param('id') id: string, @Req() req, @Body() body) {
-    console.log(body);
     if (req.user.isAdmin)
       return this.worksService.rejectWork(
         +id,

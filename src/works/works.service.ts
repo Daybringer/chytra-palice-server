@@ -5,19 +5,23 @@ import * as libre from 'libreoffice-convert';
 //  Generic
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 // DTOs
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
 // Entities & interfaces
 import { WorkEntity } from './entities/work.entity';
 import { Work } from './entities/work.interface';
+import { KeywordEntity } from './entities/keyword.entity';
+import { Keyword } from './entities/keyword.interface';
 
 @Injectable()
 export class WorksService {
   constructor(
     @InjectRepository(WorkEntity)
     private readonly workRepository: Repository<WorkEntity>,
+    @InjectRepository(KeywordEntity)
+    private readonly keywordRepository: Repository<KeywordEntity>,
   ) {}
 
   /**
@@ -64,13 +68,16 @@ export class WorksService {
     fs.mkdirSync(path.join(`files/documents/${id}`));
 
     // converting
-    if (fileExtension !== 'pdf') {
+    if (fileExtension !== '.pdf') {
       this.convertFile(file.path, id, 'pdf');
       this.convertFile(file.path, id, 'epub');
     }
 
     // moving original file
-    fs.renameSync(file.path, `files/documents/${id}/${id}.${fileExtension}`);
+    fs.renameSync(
+      file.path,
+      path.join(`files/documents/${id}/${id}${fileExtension}`),
+    );
   }
 
   /**
@@ -100,7 +107,6 @@ export class WorksService {
    * returns all works with given parameters that are not disabled
    */
   async findAll(filterOptions = {}): Promise<Work[]> {
-    console.log('hit: ', filterOptions);
     return await this.workRepository.find({ where: filterOptions });
   }
 
@@ -110,10 +116,10 @@ export class WorksService {
   async findOneByID(id: number): Promise<Work> {
     const work = await this.workRepository.findOne({ where: { id } });
 
-    return this.filterDeleted([work])[0];
+    return this.filterDeletedWorks([work])[0];
   }
 
-  filterDeleted(works: Work[]): Work[] {
+  filterDeletedWorks(works: Work[]): Work[] {
     return works.filter((work) => {
       return !work.deleted;
     });
@@ -137,9 +143,69 @@ export class WorksService {
    * Sets approveState to `approved`
    */
   async approveWork(id: number) {
-    return await this.workRepository.update(
-      { id: id },
-      { approvedState: 'approved' },
+    this.workRepository
+      .update({ id: id }, { approvedState: 'approved' })
+      .then(async (updateResult) => {
+        const keywords = (await this.workRepository.findOne({ where: { id } }))
+          .keywords;
+        keywords.forEach((keyword) => {
+          this.addKeyword(this.formatKeyword(keyword));
+        });
+        return updateResult;
+      });
+  }
+
+  /**
+   * If keyword doesn't exist add it, otherwise just `usedCount` + 1
+   */
+  async addKeyword(keyword: string) {
+    const oldKeyword = await this.keywordRepository.findOne({
+      where: { keyword },
+    });
+    if (oldKeyword) {
+      return await this.keywordRepository.update(
+        { keyword },
+        { usedCount: oldKeyword.usedCount + 1 },
+      );
+    } else {
+      const newKeyword = new KeywordEntity();
+      newKeyword.keyword = keyword;
+      return this.keywordRepository.save(newKeyword);
+    }
+  }
+
+  /**
+   * => `usedCount` - 1; if it is 0 then remove the keyword
+   */
+  async removeKeyword(keyword: string) {
+    const oldKeyword = await this.keywordRepository.findOne({
+      where: { keyword },
+    });
+    if (oldKeyword.usedCount === 1)
+      return await this.keywordRepository.delete({ keyword });
+    else
+      return await this.keywordRepository.update(
+        { keyword },
+        { usedCount: oldKeyword.usedCount - 1 },
+      );
+  }
+
+  /**
+   * returns all keywords in descending order of uses
+   */
+  async getAllKeywords() {
+    return (
+      await this.keywordRepository.find({ order: { usedCount: 'DESC' } })
+    ).map((keyword) => keyword.keyword);
+  }
+
+  /**
+   *
+   */
+  formatKeyword(keyword: string): string {
+    return (
+      keyword.trim().charAt(0).toUpperCase() +
+      keyword.trim().slice(1).toLowerCase()
     );
   }
 

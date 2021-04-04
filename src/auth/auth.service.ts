@@ -23,7 +23,6 @@ export class AuthService {
 
     const isAdmin = await this.adminRepository.findOne({ where: { email } });
 
-    console.log(isAdmin, !!isAdmin);
     const userPayload = { email, name, isAdmin: !!isAdmin, sub };
     return await this.jwtService.signAsync(userPayload);
   }

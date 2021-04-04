@@ -8,6 +8,6 @@ export class KeywordEntity {
   @Column('text')
   keyword: string;
 
-  @Column({ default: 1 })
+  @Column('int', { default: 1 })
   usedCount: number;
 }
