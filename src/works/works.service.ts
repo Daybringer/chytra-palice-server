@@ -31,19 +31,31 @@ export class WorksService {
    *
    */
   async create(createWorkDto: CreateWorkDto) {
-    const newWork = new WorkEntity();
-    // TODO may exist some better way like spread syntax to assign props
-    newWork.contestID = createWorkDto.contestID;
-    newWork.name = createWorkDto.name;
-    newWork.authorName = createWorkDto.authorName;
-    newWork.authorEmail = createWorkDto.authorEmail;
-    newWork.keywords = createWorkDto.keywords;
-    newWork.isMaturitaProject = createWorkDto.isMaturitaProject;
-    newWork.subject = createWorkDto.subject;
-    newWork.fileType = createWorkDto.fileType;
-    newWork.class = createWorkDto.class;
-    newWork.dateAdded = Date.now();
-    return await this.workRepository.save(newWork);
+    const contest = await this.contestRepository.findOne({
+      id: createWorkDto.contestID,
+    });
+    if (contest) {
+      const newWork = new WorkEntity();
+      // TODO may exist some better way like spread syntax to assign props
+      newWork.contestID = createWorkDto.contestID;
+      newWork.name = createWorkDto.name;
+      newWork.authorName = createWorkDto.authorName;
+      newWork.authorEmail = createWorkDto.authorEmail;
+      newWork.keywords = createWorkDto.keywords;
+      newWork.isMaturitaProject = createWorkDto.isMaturitaProject;
+      newWork.subject = createWorkDto.subject;
+      newWork.fileType = createWorkDto.fileType;
+      newWork.class = createWorkDto.class;
+      newWork.dateAdded = Date.now();
+      return await this.workRepository.save(newWork);
+    } else {
+      throw new Error("Contest doesn't exist");
+    }
+  }
+
+  async addReadCount(id: number) {
+    const timesRead = (await this.workRepository.findOne({ id })).timesRead;
+    return this.workRepository.update({ id }, { timesRead: timesRead + 1 });
   }
 
   /**
@@ -81,6 +93,7 @@ export class WorksService {
       file.path,
       path.join(`files/documents/${id}/${id}${fileExtension}`),
     );
+    return 'done';
   }
 
   /**
@@ -95,7 +108,6 @@ export class WorksService {
       }
 
       fs.writeFileSync(`files/documents/${workID}/${workID}.${fileType}`, done);
-      return;
     });
   }
 
@@ -109,25 +121,25 @@ export class WorksService {
   /**
    * returns all works with given parameters that are not disabled
    */
-  async findAll(filterOptions = {}): Promise<Work[]> {
-    return await this.workRepository.find({ where: filterOptions });
+  async findAll(filterOptions): Promise<Work[]> {
+    filterOptions.deleted = false;
+    const works = await this.workRepository.find({ where: filterOptions });
+    return works.map((work) => {
+      work.dateAdded = Number(work.dateAdded);
+      return work;
+    });
   }
 
   /**
    * finds single work by `id` and returns it
    */
   async findOneByID(id: number): Promise<Work> {
-    const work = await this.workRepository.findOne({ where: { id } });
-
-    return this.filterDeletedWorks([work])[0];
-  }
-
-  filterDeletedWorks(works: Work[]): Work[] {
-    return works.filter((work) => {
-      return !work.deleted;
+    const work = await this.workRepository.findOne({
+      where: { id, deleted: false },
     });
+    work.dateAdded = Number(work.dateAdded);
+    return work;
   }
-
   /**
    * Sets approveState to `rejected` and sets guarantor message
    */

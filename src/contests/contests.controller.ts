@@ -13,6 +13,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { ContestsService } from './contests.service';
 import { CreateContestDto } from './dto/create-contest.dto';
+import { SetWinnersDto } from './dto/set-winners.dto';
 import { UpdateContestDto } from './dto/update-contest.dto';
 
 @Controller('contests')
@@ -34,6 +35,13 @@ export class ContestsController {
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.contestsService.findOneByID(+id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('winners')
+  setWinners(@Body() setWinnersDto: SetWinnersDto, @Req() req) {
+    if (req.user.isAdmin) return this.contestsService.setWinners(setWinnersDto);
+    else throw new UnauthorizedException('No admin priviliges');
   }
 
   @Patch(':id')

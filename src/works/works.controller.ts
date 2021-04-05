@@ -33,6 +33,7 @@ export class WorksController {
     @Param('id') id: string,
     @Param('filetype') filetype: string,
   ) {
+    this.worksService.addReadCount(+id);
     return res.sendFile(`${id}.${filetype}`, {
       root: `./files/documents/${id}`,
     });
@@ -43,14 +44,14 @@ export class WorksController {
     return this.worksService.findAll(filterOptions);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.worksService.findOneByID(+id);
-  }
-
-  @Get('keywords/get/all')
+  @Get('keywords')
   getKeywords() {
     return this.worksService.getAllKeywords();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.worksService.findOneByID(+id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -87,7 +88,8 @@ export class WorksController {
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,
   ) {
-    return this.worksService.uploadDocument(file, +id);
+    const resolve = this.worksService.uploadDocument(file, +id);
+    return resolve;
   }
 
   @UseGuards(JwtAuthGuard)

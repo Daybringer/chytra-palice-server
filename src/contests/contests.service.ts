@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WorkEntity } from 'src/works/entities/work.entity';
+import { Work } from 'src/works/entities/work.interface';
 import { Repository } from 'typeorm';
 // DTOs
 import { CreateContestDto } from './dto/create-contest.dto';
+import { SetWinnersDto } from './dto/set-winners.dto';
 import { UpdateContestDto } from './dto/update-contest.dto';
 // Entities & interfaces
 import { ContestEntity } from './entities/contest.entity';
@@ -13,6 +16,8 @@ export class ContestsService {
   constructor(
     @InjectRepository(ContestEntity)
     private readonly contestRepository: Repository<ContestEntity>,
+    @InjectRepository(WorkEntity)
+    private readonly workRepository: Repository<WorkEntity>,
   ) {}
   /**
    *
@@ -29,19 +34,45 @@ export class ContestsService {
     return await this.contestRepository.save(newContest);
   }
 
-  async findAll() {
-    return await this.contestRepository.find({ deleted: false });
+  async findAll(): Promise<Contest[]> {
+    const contests = await this.contestRepository.find({ deleted: false });
+    return contests.map((contest) => {
+      contest.dateAdded = Number(contest.dateAdded);
+      contest.dateEnding = Number(contest.dateEnding);
+      return contest;
+    });
   }
 
   async findOneByID(id: number): Promise<Contest> {
-    return await this.contestRepository.findOne({ where: { id } });
+    const contest = await this.contestRepository.findOne({
+      where: { id, deleted: false },
+    });
+    contest.dateAdded = Number(contest.dateAdded);
+    contest.dateEnding = Number(contest.dateEnding);
+    return contest;
+  }
+
+  async setWinners(setWinnersDto: SetWinnersDto) {
+    const id = setWinnersDto.id;
+    const first = setWinnersDto.winners[0];
+    const second = setWinnersDto.winners[1];
+    const third = setWinnersDto.winners[2];
+
+    return await this.contestRepository.update(
+      { id },
+      { first, second, third, running: false },
+    );
   }
 
   update(id: number, updateContestDto: UpdateContestDto) {
     return `This action updates a #${id} contest`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} contest`;
+  async remove(id: number) {
+    const contest = await this.contestRepository.findOne({ id });
+    contest.nominated.forEach(async (id) => {
+      await this.workRepository.update({ id }, { deleted: true });
+    });
+    return this.contestRepository.update({ id }, { deleted: true });
   }
 }
