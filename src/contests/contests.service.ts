@@ -34,8 +34,10 @@ export class ContestsService {
     return await this.contestRepository.save(newContest);
   }
 
-  async findAll(): Promise<Contest[]> {
-    const contests = await this.contestRepository.find({ deleted: false });
+  async findAll(filtered = true): Promise<Contest[]> {
+    const contests = filtered
+      ? await this.contestRepository.find({ deleted: false })
+      : await this.contestRepository.find();
     return contests.map((contest) => {
       contest.dateAdded = Number(contest.dateAdded);
       contest.dateEnding = Number(contest.dateEnding);
@@ -43,10 +45,14 @@ export class ContestsService {
     });
   }
 
-  async findOneByID(id: number): Promise<Contest> {
-    const contest = await this.contestRepository.findOne({
-      where: { id, deleted: false },
-    });
+  async findOneByID(id: number, filtered = true): Promise<Contest> {
+    const contest = filtered
+      ? await this.contestRepository.findOne({
+          where: { id, deleted: false },
+        })
+      : await this.contestRepository.findOne({
+          where: { id },
+        });
     contest.dateAdded = Number(contest.dateAdded);
     contest.dateEnding = Number(contest.dateEnding);
     return contest;
@@ -64,8 +70,32 @@ export class ContestsService {
     );
   }
 
-  update(id: number, updateContestDto: UpdateContestDto) {
-    return `This action updates a #${id} contest`;
+  async update(id: number, updateContestDto: UpdateContestDto) {
+    const oldContest = await this.contestRepository.findOne({ id });
+    if (updateContestDto.dateEnding != oldContest.dateEnding) {
+      return await this.contestRepository.update(
+        { id },
+        {
+          running: true,
+          first: [],
+          second: [],
+          third: [],
+          name: updateContestDto.name,
+          description: updateContestDto.description,
+          dateEnding: updateContestDto.dateEnding,
+          category: updateContestDto.category,
+        },
+      );
+    } else {
+      return await this.contestRepository.update(
+        { id },
+        {
+          name: updateContestDto.name,
+          description: updateContestDto.description,
+          category: updateContestDto.category,
+        },
+      );
+    }
   }
 
   async remove(id: number) {

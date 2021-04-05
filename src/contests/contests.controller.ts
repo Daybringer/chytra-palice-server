@@ -32,9 +32,19 @@ export class ContestsController {
     return this.contestsService.findAll();
   }
 
+  @Get('unfiltered')
+  findAllUnfiltered() {
+    return this.contestsService.findAll(false);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.contestsService.findOneByID(+id);
+  }
+
+  @Get(':id/unfiltered')
+  findOneUnfiltered(@Param('id') id: number) {
+    return this.contestsService.findOneByID(+id, false);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -46,6 +56,7 @@ export class ContestsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateContestDto: UpdateContestDto) {
+    console.log('update:', id, updateContestDto);
     return this.contestsService.update(+id, updateContestDto);
   }
 
