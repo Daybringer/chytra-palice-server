@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as fs from 'fs';
-import gm from 'gm';
+import * as gm from 'gm';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -35,10 +35,10 @@ export class PostsService {
     images.forEach((image) => {
       gm(image.path)
         .resize(null, 500)
-        .write(image.path, (err) => {
-          console.log(err);
-        });
+        .write(image.path, () => {});
     });
+    const imagesNames = images.map((image) => image.filename);
+    await this.postRepository.update({ id }, { pictures: imagesNames });
     return;
   }
 

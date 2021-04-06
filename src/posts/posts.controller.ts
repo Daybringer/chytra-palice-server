@@ -33,7 +33,7 @@ export class PostsController {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
-    FilesInterceptor('file', 6, {
+    FilesInterceptor('images', 6, {
       storage: diskStorage({
         destination: './files/images',
         filename: (req, file, cb) => {
@@ -58,8 +58,6 @@ export class PostsController {
     } else {
       return await this.postsService.uploadImages(+id, images);
     }
-
-    return;
   }
 
   @Get()
