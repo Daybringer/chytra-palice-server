@@ -110,14 +110,4 @@ export class WorksController {
       );
     else throw new UnauthorizedException('No admin priviliges');
   }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateWorkDto: UpdateWorkDto) {
-  //   return this.worksService.update(+id, updateWorkDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.worksService.remove(+id);
-  // }
 }

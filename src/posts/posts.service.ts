@@ -34,15 +34,13 @@ export class PostsService {
 
     images.forEach((image) => {
       gm(image.path)
-        .resize(null, 500)
+        .resize(null, 1000)
         .write(image.path, () => {});
     });
     const imagesNames = images.map((image) => image.filename);
     await this.postRepository.update({ id }, { pictures: imagesNames });
     return;
   }
-
-  adjustImage() {}
 
   removeUnauthorized(files: Express.Multer.File[]) {
     files.forEach((file) => {
@@ -55,8 +53,8 @@ export class PostsService {
     return await this.postRepository.find({ deleted: false });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findByID(id: number) {
+    return await this.postRepository.findOne({ id, deleted: false });
   }
 
   update(id: number, updatePostDto: UpdatePostDto) {

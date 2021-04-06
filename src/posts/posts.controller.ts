@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   UseInterceptors,
   UploadedFiles,
+  Res,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -65,9 +66,16 @@ export class PostsController {
     return this.postsService.findAll();
   }
 
+  @Get('images/:filename')
+  findOne(@Param('filename') filename: string, @Res() res) {
+    return res.sendFile(filename, {
+      root: './files/images',
+    });
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  getPostByID(@Param('id') id: string) {
+    return this.postsService.findByID(+id);
   }
 
   @Patch(':id')
