@@ -53,8 +53,11 @@ export class ContestsService {
       : await this.contestRepository.findOne({
           where: { id },
         });
-    contest.dateAdded = Number(contest.dateAdded);
-    contest.dateEnding = Number(contest.dateEnding);
+    if (contest) {
+      contest.dateAdded = Number(contest.dateAdded);
+      contest.dateEnding = Number(contest.dateEnding);
+    }
+
     return contest;
   }
 
@@ -99,9 +102,9 @@ export class ContestsService {
   }
 
   async remove(id: number) {
-    const contest = await this.contestRepository.findOne({ id });
-    contest.nominated.forEach(async (id) => {
-      await this.workRepository.update({ id }, { deleted: true });
+    const works = await this.workRepository.find({ contestID: id });
+    works.forEach(async (work) => {
+      await this.workRepository.update({ id: work.id }, { deleted: true });
     });
     return this.contestRepository.update({ id }, { deleted: true });
   }

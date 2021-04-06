@@ -83,7 +83,7 @@ export class WorksController {
     }),
   )
   @Post('upload/:id')
-  uploadDocument(
+  async uploadDocument(
     @Req() req,
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,

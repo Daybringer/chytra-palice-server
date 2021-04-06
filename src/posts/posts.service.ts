@@ -1,15 +1,58 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as fs from 'fs';
+import gm from 'gm';
+import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { PostEntity } from './entities/post.entity';
 
 @Injectable()
 export class PostsService {
-  create(createPostDto: CreatePostDto) {
-    return 'This action adds a new post';
+  constructor(
+    @InjectRepository(PostEntity)
+    private readonly postRepository: Repository<PostEntity>,
+  ) {}
+  async create(createPostDto: CreatePostDto, author: string) {
+    const newPost = new PostEntity();
+    newPost.title = createPostDto.title;
+    newPost.author = author;
+    newPost.dateAdded = Date.now();
+    newPost.content = createPostDto.content;
+    return await this.postRepository.save(newPost);
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async uploadImages(id: number, images: Express.Multer.File[]) {
+    // Removing old images
+    const post = await this.postRepository.findOne({ id });
+    post.pictures.forEach((pictureName) => {
+      fs.rmSync(`/files/images/${pictureName}.png`, {
+        force: true,
+        recursive: true,
+      });
+    });
+
+    images.forEach((image) => {
+      gm(image.path)
+        .resize(null, 500)
+        .write(image.path, (err) => {
+          console.log(err);
+        });
+    });
+    return;
+  }
+
+  adjustImage() {}
+
+  removeUnauthorized(files: Express.Multer.File[]) {
+    files.forEach((file) => {
+      fs.rmSync(file.path);
+    });
+    return;
+  }
+
+  async findAll() {
+    return await this.postRepository.find({ deleted: false });
   }
 
   findOne(id: number) {
