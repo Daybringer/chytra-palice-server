@@ -1,34 +1,75 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TilesService } from './tiles.service';
-import { CreateTileDto } from './dto/create-tile.dto';
-import { UpdateTileDto } from './dto/update-tile.dto';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { Repository } from 'typeorm';
+import { TileEntity } from './entities/tile.entity';
 
 @Controller('tiles')
 export class TilesController {
-  constructor(private readonly tilesService: TilesService) {}
+  constructor(
+    @InjectRepository(TileEntity)
+    private readonly tilesRepository: Repository<TileEntity>,
+  ) {}
 
-  @Post()
-  create(@Body() createTileDto: CreateTileDto) {
-    return this.tilesService.create(createTileDto);
+  @UseGuards(JwtAuthGuard)
+  @Post('spotify')
+  async updateSpotify(@Body() body: { episode: string }, @Req() req) {
+    if (!req.user.isAdmin) throw new UnauthorizedException('Not an admin');
+    const exists = await this.tilesRepository.findOne({
+      where: { type: 'spotify' },
+    });
+    if (exists) {
+      return await this.tilesRepository.update(
+        { type: 'spotify' },
+        { content: body.episode },
+      );
+    } else {
+      const newTile = new TileEntity();
+      newTile.type = 'spotify';
+      newTile.content = body.episode;
+      return await this.tilesRepository.save(newTile);
+    }
   }
 
-  @Get()
-  findAll() {
-    return this.tilesService.findAll();
+  @Get('spotify')
+  async getEpisode() {
+    return (await this.tilesRepository.findOne({ where: { type: 'spotify' } }))
+      .content;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tilesService.findOne(+id);
+  @Get('aktualita')
+  async getText() {
+    return (
+      await this.tilesRepository.findOne({ where: { type: 'aktualita' } })
+    ).content;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTileDto: UpdateTileDto) {
-    return this.tilesService.update(+id, updateTileDto);
-  }
+  @UseGuards(JwtAuthGuard)
+  @Post('aktualita')
+  async updateAktualita(@Body() body: { text: string }, @Req() req) {
+    if (!req.user.isAdmin) throw new UnauthorizedException('Not an admin');
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tilesService.remove(+id);
+    const exists = await this.tilesRepository.findOne({
+      where: { type: 'aktualita' },
+    });
+    if (exists) {
+      return await this.tilesRepository.update(
+        { type: 'aktualita' },
+        { content: body.text },
+      );
+    } else {
+      const newTile = new TileEntity();
+      newTile.type = 'aktualita';
+      newTile.content = body.text;
+      return await this.tilesRepository.save(newTile);
+    }
   }
 }

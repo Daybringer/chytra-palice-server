@@ -59,6 +59,30 @@ export class WorksService {
   }
 
   /**
+   * returns the newest work
+   */
+  async getNewest() {
+    return (
+      await this.workRepository.find({
+        where: { deleted: false },
+        order: { id: 'DESC' },
+      })
+    )[0];
+  }
+
+  /**
+   * returns the most popular work
+   */
+  async getPopular() {
+    return (
+      await this.workRepository.find({
+        where: { deleted: false },
+        order: { timesRead: 'DESC' },
+      })
+    )[0];
+  }
+
+  /**
    * assigns user information from jwt payload
    */
   inferUserInfoFromJWT(

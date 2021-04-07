@@ -49,6 +49,16 @@ export class WorksController {
     return this.worksService.getAllKeywords();
   }
 
+  @Get('newest')
+  getNewest() {
+    return this.worksService.getNewest();
+  }
+
+  @Get('popular')
+  getPopular() {
+    return this.worksService.getPopular();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.worksService.findOneByID(+id);
