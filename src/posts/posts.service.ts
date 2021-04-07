@@ -50,18 +50,21 @@ export class PostsService {
   }
 
   async findAll() {
-    return await this.postRepository.find({ deleted: false });
+    return await this.postRepository.find({
+      where: { deleted: false },
+      order: { id: 'DESC' },
+    });
   }
 
   async findByID(id: number) {
     return await this.postRepository.findOne({ id, deleted: false });
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(id: number, createPostDto: CreatePostDto) {
+    return await this.postRepository.update({ id }, createPostDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: number) {
+    return await this.postRepository.update({ id }, { deleted: true });
   }
 }
